@@ -1,6 +1,6 @@
 //  creating and exporting a context to use  all product in the shopCategory pages such as men, women, and kids
 
-import { createContext, useState } from "react";
+import { createContext, useState, useEffect } from "react";
 import all_products from "../Components/Assets/all_product";
 
 export const ShopContext = createContext(null);
@@ -17,6 +17,8 @@ const getDefaultCart = () => {
 const ShopContextProvider = (props) => {
   //useState variable for setCartItems
   const [cartItems, setCartItems] = useState(getDefaultCart());
+  // Total Amount State: The total amount is stored in the totalAmount state in the context and updated accordingly.
+  const [totalAmount, setTotalAmount] = useState(0);
 
   //addToCart function - can add products in cart
   const addToCart = (itemId) => {
@@ -30,26 +32,40 @@ const ShopContextProvider = (props) => {
   };
 
   //getTotalAmount function - helps calculate tolal amount of cartItem
-  const getTotalCartAmount = () => {
-    let totalAmount = 0;
-    for (const item in cartItems) {
-      if (cartItems[item] > 0) 
-        {
-          let itemInfo = all_products.find(
-          (product) => product.id === Number(item)
-        )
-          totalAmount += itemInfo.new_price * cartItems[item];
+  // useEffect Hook in Context: The useEffect hook is used to recalculate the total amount whenever cartItems change.
+  useEffect(() => {
+    const calculateTotalAmount = () => {
+      let total = 0;
+      for (const item in cartItems) {
+        if (cartItems[item] > 0) {
+          const itemInfo = all_products.find(
+            (product) => product.id === Number(item)
+          );
+          total += itemInfo.new_price * cartItems[item];
+        }
       }
-      return totalAmount;
+      setTotalAmount(total);
+    };
+    calculateTotalAmount();
+  }, [cartItems]);
+
+  const getTotalCartItem = () => {
+    let totalItem = 0;
+    for (const item in cartItems) {
+      if (cartItems[item] > 0) {
+        totalItem += cartItems[item];
+      }
     }
+    return totalItem;
   };
 
   const ContextValue = {
-    getTotalCartAmount,
     all_products,
     cartItems,
+    totalAmount,
     addToCart,
     removeFromCart,
+    getTotalCartItem,
   };
 
   return (
